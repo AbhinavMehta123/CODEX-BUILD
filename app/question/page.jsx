@@ -2,16 +2,14 @@
 import React, { useState, useEffect } from "react";
 import ElegantShape from "@/components/elegantShape";
 
+// 🕒 Countdown Timer Component
 const CountdownTimer = ({ durationInSeconds }) => {
   const [timeLeft, setTimeLeft] = useState(durationInSeconds);
+  const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    const storedEndTime = localStorage.getItem("hackathon_end_time");
-    let endTime;
-
-    if (storedEndTime) {
-      endTime = parseInt(storedEndTime, 10);
-    } else {
+    let endTime = parseInt(localStorage.getItem("hackathon_end_time"), 10);
+    if (!endTime) {
       endTime = Date.now() + durationInSeconds * 1000;
       localStorage.setItem("hackathon_end_time", endTime.toString());
     }
@@ -19,6 +17,11 @@ const CountdownTimer = ({ durationInSeconds }) => {
     const updateTimer = () => {
       const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
       setTimeLeft(remaining);
+
+      if (remaining === 0) {
+        setIsComplete(true);
+        localStorage.removeItem("hackathon_end_time");
+      }
     };
 
     updateTimer();
@@ -35,10 +38,25 @@ const CountdownTimer = ({ durationInSeconds }) => {
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
+  if (isComplete) {
+    return (
+      <div className="flex flex-col items-center mb-8 text-center">
+        <div className="text-4xl md:text-5xl font-bold text-[#e99b63] mb-3 animate-pulse">
+          Thank You!
+        </div>
+        <p className="text-gray-400 text-sm tracking-wider max-w-sm">
+          The hackathon timer has ended. We appreciate your hard work and
+          innovation during{" "}
+          <span className="text-[#e99b63] font-semibold">CODEX-BUILD</span>!
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center mb-8">
       <div className="text-[10px] text-[#e99b63] tracking-[0.3em] uppercase mb-3 font-black">
-        Hack Timer Active
+        Hack Timer
       </div>
       <div className="text-5xl font-mono font-bold text-white tabular-nums tracking-tight">
         {formatTime(timeLeft)}
@@ -46,13 +64,16 @@ const CountdownTimer = ({ durationInSeconds }) => {
       <div className="w-full max-w-[240px] h-[3px] bg-white/5 mt-5 rounded-full overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-[#656565] to-[#e99b63] transition-all duration-1000 shadow-[0_0_10px_rgba(233,155,99,0.5)]"
-          style={{ width: `${(timeLeft / durationInSeconds) * 100}%` }}
+          style={{
+            width: `${(timeLeft / durationInSeconds) * 100}%`,
+          }}
         ></div>
       </div>
     </div>
   );
 };
 
+// 🧠 Main Question Page
 const Page = () => {
   const [formData, setFormData] = useState({
     name: "",
@@ -88,7 +109,7 @@ const Page = () => {
     ],
   };
 
-  // On mount, load stored assigned topic if exists
+  // Load persisted form/topic on mount
   useEffect(() => {
     const storedTopic = localStorage.getItem("assigned_topic");
     const storedForm = localStorage.getItem("form_data");
@@ -97,9 +118,9 @@ const Page = () => {
   }, []);
 
   const handleChange = (e) => {
-    const updatedData = { ...formData, [e.target.name]: e.target.value };
-    setFormData(updatedData);
-    localStorage.setItem("form_data", JSON.stringify(updatedData)); // persist form data
+    const updated = { ...formData, [e.target.name]: e.target.value };
+    setFormData(updated);
+    localStorage.setItem("form_data", JSON.stringify(updated));
   };
 
   const handleSubmit = (e) => {
@@ -108,26 +129,61 @@ const Page = () => {
     const randomTopic =
       domainTopics[Math.floor(Math.random() * domainTopics.length)];
     setAssignedTopic(randomTopic);
-    localStorage.setItem("assigned_topic", randomTopic); // persist assigned topic
-    const endTime = Date.now() + (2 * 3600 + 30 * 60) * 1000;
-    localStorage.setItem("hackathon_end_time", endTime.toString()); // reset/start timer
+    localStorage.setItem("assigned_topic", randomTopic);
+
+    const endTime = Date.now() + (2 * 3600 + 30 * 60) * 1000; // 2hr30min
+    localStorage.setItem("hackathon_end_time", endTime.toString());
   };
 
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] px-6 pt-32 bg-[#0a0a0a] overflow-hidden text-white pb-20" id="getstarted">
+    <section
+      className="relative flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] px-6 pt-32 bg-[#0a0a0a] overflow-hidden text-white pb-20"
+    >
+      {/* ✨ Background and Shapes */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#e99b63]/[0.08] via-[#1a1a1a] to-[#e99b63]/[0.12] blur-3xl" />
-
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <ElegantShape delay={0.3} width={600} height={140} rotate={10} gradient="from-[#e99b63]/[0.8] to-[#ffcc8f]/[0.6]" className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]" />
-        <ElegantShape delay={0.5} width={500} height={120} rotate={-15} gradient="from-[#ffb87a]/[0.5] to-[#e99b63]/[0.4]" className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]" />
-        <ElegantShape delay={0.4} width={300} height={80} rotate={-8} gradient="from-[#ffb87a]/[0.55] to-[#e99b63]/[0.45]" className="left-[5%] md:left-[10%] bottom-[10%]" />
-        <ElegantShape delay={0.6} width={220} height={60} rotate={20} gradient="from-[#ffcc8f]/[0.6] to-[#e99b63]/[0.45]" className="right-[10%] md:right-[20%] top-[10%]" />
+        <ElegantShape
+          delay={0.3}
+          width={600}
+          height={140}
+          rotate={10}
+          gradient="from-[#e99b63]/[0.8] to-[#ffcc8f]/[0.6]"
+          className="left-[-10%] md:left-[-5%] top-[15%]"
+        />
+        <ElegantShape
+          delay={0.5}
+          width={500}
+          height={120}
+          rotate={-15}
+          gradient="from-[#ffb87a]/[0.5] to-[#e99b63]/[0.4]"
+          className="right-[-5%] md:right-[0%] top-[70%]"
+        />
+        <ElegantShape
+          delay={0.4}
+          width={300}
+          height={80}
+          rotate={-8}
+          gradient="from-[#ffb87a]/[0.55] to-[#e99b63]/[0.45]"
+          className="left-[5%] bottom-[10%]"
+        />
+        <ElegantShape
+          delay={0.6}
+          width={220}
+          height={60}
+          rotate={20}
+          gradient="from-[#ffcc8f]/[0.6] to-[#e99b63]/[0.45]"
+          className="right-[10%] top-[10%]"
+        />
       </div>
 
+      {/* 🧾 Form Card */}
       <div className="max-w-md w-full relative z-10">
+        {/* Header Badge */}
         <div className="flex items-center justify-center gap-4 mb-6">
           <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#e99b63]" />
-          <span className="text-[10px] font-black tracking-[0.5em] text-white/80 uppercase">CODEX-BUILD</span>
+          <span className="text-[10px] font-black tracking-[0.5em] text-white/80 uppercase">
+            CODEX-BUILD
+          </span>
           <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#e99b63]" />
         </div>
 
@@ -135,51 +191,103 @@ const Page = () => {
           {!assignedTopic ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-white tracking-tight">Initiate Build</h2>
-                <p className="text-gray-500 text-sm mt-2">Enter details to unlock your challenge</p>
+                <h2 className="text-3xl font-bold text-white tracking-tight">
+                  Initiate Build
+                </h2>
+                <p className="text-gray-500 text-sm mt-2">
+                  Enter details to unlock your challenge
+                </p>
               </div>
 
+              {/* Inputs */}
               <div className="space-y-5">
                 <div className="text-left">
-                  <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider ml-1">Team Lead Name</label>
-                  <input type="text" name="name" required value={formData.name} onChange={handleChange} className="w-full mt-2 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#e99b63] focus:bg-white/[0.05] transition-all" placeholder="Enter name" />
+                  <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                    Team Lead Name
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full mt-2 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#e99b63] focus:bg-white/[0.05] transition-all"
+                    placeholder="Enter name"
+                  />
                 </div>
 
                 <div className="text-left">
-                  <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider ml-1">Station / Table</label>
-                  <input type="number" name="tableNumber" required value={formData.tableNumber} onChange={handleChange} className="w-full mt-2 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#e99b63] focus:bg-white/[0.05] transition-all" placeholder="00" />
+                  <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                    Station / Table
+                  </label>
+                  <input
+                    type="number"
+                    name="tableNumber"
+                    required
+                    value={formData.tableNumber}
+                    onChange={handleChange}
+                    className="w-full mt-2 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#e99b63] focus:bg-white/[0.05] transition-all"
+                    placeholder="00"
+                  />
                 </div>
 
                 <div className="text-left">
-                  <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider ml-1">Project Track</label>
-                  <select name="domain" required value={formData.domain} onChange={handleChange} className="w-full mt-2 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#e99b63] focus:bg-white/[0.05] transition-all cursor-pointer">
-                    <option value="" disabled>SELECT DOMAIN</option>
-                    {Object.keys(topics).map((d) => <option key={d} value={d} className="bg-[#0c0c0c]">{d}</option>)}
+                  <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider ml-1">
+                    Project Track
+                  </label>
+                  <select
+                    name="domain"
+                    required
+                    value={formData.domain}
+                    onChange={handleChange}
+                    className="w-full mt-2 bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[#e99b63] focus:bg-white/[0.05] transition-all cursor-pointer"
+                  >
+                    <option value="" disabled>
+                      SELECT DOMAIN
+                    </option>
+                    {Object.keys(topics).map((d) => (
+                      <option key={d} value={d} className="bg-[#0c0c0c]">
+                        {d}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
-              <button type="submit" className="w-full bg-[#e99b63] text-black font-bold py-4 rounded-xl hover:shadow-[0_0_25px_rgba(233,155,99,0.4)] active:scale-[0.98] transition-all uppercase tracking-widest text-xs mt-6">
+              <button
+                type="submit"
+                className="w-full bg-[#e99b63] text-black font-bold py-4 rounded-xl hover:shadow-[0_0_25px_rgba(233,155,99,0.4)] active:scale-[0.98] transition-all uppercase tracking-widest text-xs mt-6"
+              >
                 START BUILDING
               </button>
             </form>
           ) : (
-            <div className="text-center py-4 animate-in fade-in zoom-in-95 duration-500">
+            <div className="text-center py-4">
               <CountdownTimer durationInSeconds={2 * 3600 + 30 * 60} />
 
               <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 mb-8 mt-2 shadow-inner">
-                <p className="text-[10px] font-bold text-[#e99b63] uppercase tracking-[0.2em] mb-3">Target Project</p>
-                <h3 className="text-2xl font-bold text-white leading-snug">{assignedTopic}</h3>
+                <p className="text-[10px] font-bold text-[#e99b63] uppercase tracking-[0.2em] mb-3">
+                  Target Project
+                </p>
+                <h3 className="text-2xl font-bold text-white leading-snug">
+                  {assignedTopic}
+                </h3>
               </div>
 
               <div className="flex items-center justify-around bg-white/[0.03] rounded-lg py-3 px-4 border border-white/[0.05]">
                 <div className="text-center">
-                  <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest">Station</p>
-                  <p className="text-white text-sm font-mono">#{formData.tableNumber}</p>
+                  <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest">
+                    Station
+                  </p>
+                  <p className="text-white text-sm font-mono">
+                    #{formData.tableNumber}
+                  </p>
                 </div>
                 <div className="h-8 w-[1px] bg-white/10"></div>
                 <div className="text-center">
-                  <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest">Track</p>
+                  <p className="text-[9px] text-gray-500 uppercase font-bold tracking-widest">
+                    Track
+                  </p>
                   <p className="text-white text-sm font-mono">{formData.domain}</p>
                 </div>
               </div>
@@ -188,6 +296,7 @@ const Page = () => {
         </div>
       </div>
 
+      {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-[#0a0a0a]/70 pointer-events-none" />
     </section>
   );

@@ -122,7 +122,7 @@ const About = ({ id = "about" }) => {
           className="relative w-56 h-56 md:w-72 md:h-72 rounded-full overflow-hidden shadow-[0_0_60px_#e99b63]/40 border border-[#e99b63]/40"
         >
           <img
-            src="/WhatsApp Image 2025-12-28 at 9.03.33 PM.jpeg"
+            src="/WebAssets/WhatsApp Image 2026-01-18 at 5.51.57 PM.jpeg"
             alt="About Codex Build"
             className="object-cover w-full h-full rounded-full"
           />
